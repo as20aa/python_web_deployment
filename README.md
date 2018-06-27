@@ -50,10 +50,13 @@ python3
 >>>quit()
 ```
 If the command above didn't informat error then you had installed python3.6 successfully
-The next step is install virtualenv
+The next step is to install virtualenv
 ```bash
+# We use python3 -m before pip to avoid confliction of python2.7 and python3.6
+# This command will use python3.6's pip and will not affect the python2.7
 python3 -m pip install virtualenv
 # Create a virtual environment
+# We use the virtualenv to make sure some operation will not affect the system's python
 python3 -m virtualenv myproject
 # Activate the virtual environment
 source myproject/bin/activate
@@ -62,27 +65,32 @@ If you had activated the virtualenv sucessfully, you can see the prompt like thi
 ```bash
 (myproject) root$:
 ```
-You can quit the virtualenv via type
+You can quit the virtualenv via typing
 ```bash
 deactivate
 ```
 Don't quit the virtual environment and install the essential python packages
 ```bash
+# The Uwsgi framework is a python web server framework
 pip install uwsgi
+# The flask is a framework of python web application
 pip install flask
-pip install sklearn
-# install pandas will auto-install numpy
+# Install pandas for operating file of data
 pip install pandas
+# install pandas will auto-install numpy
+# Sklearn is a highly-intergated api of machine learning
+pip install sklearn
 ```
 The last step of prepare is installing Nginx
 ```bash
+# Create a repo file to install nginx from nginx.org
 vi /etc/yum.repos.d/nginx.repo
 ```
 Add the follow lines to nginx.repo
 ```bash
 [nginx]
 name=nginx repo
-baseurl=https://nginx.org/packages/mainline/<OS>/<OSRELEASE>/$basearch/
+baseurl=https://nginx.org/packages/mainline/centos/7/$basearch/
 gpgcheck=0
 enabled=1
 ```
@@ -92,7 +100,60 @@ yum update
 ```
 Install Nginx
 ```bash
+# After install the nginx repo, you can install nginx directly
 yum install nginx
 ```
-Now all the prepare is done, We can begin to configure nginx and uwsgi
+Now all the preparation was done, We can begin to configure nginx and uwsgi
 # Configure
+Before configure our environment, we create a python web application for test
+just cd /myproject and activate the virtualenv myproject
+```bash
+vim hello.py
+```
+Add lines to hello.py
+```python
+from flask import Flask
+application = Flask(__name__)
+@application.route('/')
+
+def hello_word():
+        return 'Hello World!'
+
+if __name__ == '__main__'
+        application.run(host = '127.0.0.1',port = 8080)
+```
+Save and exit, use curl to test the code above
+```bash
+# Start the flask application
+python hello.py
+```
+Open another ssh and type in
+```bash
+# The IP address must be the same as the paramaters in the hello.py
+curl -I 127.0.0.1:8080
+```
+If you see the prompt below you had create a executable python web application
+```bash
+HTTP/1.0 200 OK
+Content-Type: text/html; charset=utf-8
+Content-Length: 40
+Server: Werkzeug/0.14.1 Python/3.6.5
+Date: Wed, 27 Jun 2018 06:17:34 GMT
+```
+(Use ctrl+c to stop the flask web application)
+We begin to configure the uwsgi for the hello.py
+```bash
+# Create a configure file for uwsgi, we assume you are in the same directory as hello.py
+vim uwsgi.ini
+```
+Add lines to uwsgi.ini
+```bash
+[uwsgi]
+# The socket pointes to the pipe file which commucate with the network
+# It will auto-create this file
+socket = /root/evaluation/online/hello.sock
+# The module is the file name of our python web application
+module = hello
+# Set the default web configure for our python web application
+stats = 127.0.0.1:8080
+```
