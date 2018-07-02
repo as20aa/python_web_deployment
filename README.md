@@ -140,8 +140,8 @@ Content-Length: 40
 Server: Werkzeug/0.14.1 Python/3.6.5
 Date: Wed, 27 Jun 2018 06:17:34 GMT
 ```
-(Use ctrl+c to stop the flask web application)
-We begin to configure the uwsgi for the hello.py
+(Press ctrl+c to stop the flask web application)
+We begin to configure the uwsgi for the hello.py to use the unix socket to commucate with nginx
 ```bash
 # Create a configure file for uwsgi, we assume you are in the same directory as hello.py
 vim uwsgi.ini
@@ -152,8 +152,28 @@ Add lines to uwsgi.ini
 # The socket pointes to the pipe file which commucate with the network
 # It will auto-create this file
 socket = /root/evaluation/online/hello.sock
-# The module is the file name of our python web application
-module = hello
-# Set the default web configure for our python web application
-stats = 127.0.0.1:8080
+# Set the permission for the sock file, and must be 666 not 660
+chmod-socket = 666
+# Set the vacuum true, the uwsgi program will delete the sock file after it terminal
+vacuum = true
+# Set the wsgi file to point the python web application file
+wsgi-file = wsgi.py
 ```
+And then add lines to nginx.conf
+```bash
+ server {
+        # The port you want to open for others to visit
+        listen 80;
+        # The server name
+        server_name localhost;
+        location / {
+            # Set uwsgi_params to use uwsgi
+            include uwsgi_params;
+            # Set the web file directory
+            root /root/evaluation/online;
+            # Set the commucate file you use between uwsgi and nginx, must be the same as the uwsgi.ini
+            uwsgi_pass unix:/tmp/uwsgi.sock;
+        }
+    }
+```
+Start the uwsgi and reload the nginx, if you got the right web page, congraturation!
