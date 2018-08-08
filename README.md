@@ -177,3 +177,6 @@ And then add lines to nginx.conf
     }
 ```
 Start the uwsgi and reload the nginx, if you got the right web page, congraturation!
+
+# question
+If the uwsgi informt that no app loaded, you can remove the yum version uwsgi and install the python version uwsgi
