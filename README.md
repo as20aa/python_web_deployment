@@ -39,7 +39,7 @@ and then go on
 ```bash
 # Configure the install path
 # You have to on the root directory of Python-3.6
-./configure --prefix=usr
+./configure --prefix=/usr
 make
 make install
 ```
