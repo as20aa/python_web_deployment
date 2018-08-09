@@ -1,10 +1,10 @@
 # python_web_deployment
-Configure environment for depoly python web application
+Configure environment for deploy python web application
 
 # Environment
 * CPU: 1GHz
 * RAM: 1G
-* OS:  Centos 7 x64
+* OS:  Centos 7.4.1 x64
 # Requirements
 * Python 3.6
 * Virtualenv
